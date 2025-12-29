@@ -183,3 +183,5 @@ endif()
 if (TESTING)
   add_subdirectory(test)
 endif()
+
+install(TARGETS ${LIB_NAME} DESTINATION lib)

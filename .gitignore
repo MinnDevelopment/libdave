@@ -1,1 +1,9 @@
 .DS_Store
+.idea
+
+# Ignore Gradle project-specific cache directory
+.gradle
+.kotlin
+
+# Ignore Gradle build output directory
+build

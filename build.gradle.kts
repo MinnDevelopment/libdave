@@ -1,0 +1,7 @@
+plugins {
+    base
+}
+
+tasks.clean {
+
+}
