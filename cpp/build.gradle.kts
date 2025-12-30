@@ -41,6 +41,8 @@ val cmakePrepareShared by tasks.registering(AbstractCmakeTask::class) {
 
     if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
         option("-DCMAKE_INSTALL_PREFIX=${System.getProperty("user.home")}/.local")
+//    } else {
+//        option("-G", "Visual Studio 17 2022")
     }
 }
 
@@ -51,6 +53,7 @@ val cmakeBuildShared by tasks.registering(AbstractCmakeTask::class) {
 
     option("--build", outputDir.get().asFile.absolutePath)
     option("--target", "libdave")
+    option("--config", "Release")
 }
 
 val cmakeInstallShared by tasks.registering(AbstractCmakeTask::class) {
