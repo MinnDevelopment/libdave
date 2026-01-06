@@ -13,7 +13,7 @@ abstract class AbstractCmakeTask : DefaultTask() {
     abstract val options: ListProperty<String>
 
     @get:OutputDirectory
-    abstract val outputDir: DirectoryProperty
+    abstract val buildDir: DirectoryProperty
 
     @get:Input
     @get:Optional

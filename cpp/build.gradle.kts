@@ -33,60 +33,36 @@ val cmakePrepareShared by tasks.registering(AbstractCmakeTask::class) {
     environment.put("VCPKG_BUILD_TYPE", "release")
 
     inputs.file("CMakeLists.txt")
-    inputs.file("test/CMakeLists.txt")
-    outputDir = cmakeBuildDir.get().dir("shared")
+    buildDir = cmakeBuildDir.get().dir("shared")
+    val buildDir = layout.buildDirectory.dir("libs")
 
-    option("-B${outputDir.get().asFile.absolutePath}")
+    option("-B${buildDir.get().asFile.absolutePath}")
     option("-DVCPKG_MANIFEST_DIR=${opensslManifest.asFile.absolutePath}")
     option("-DCMAKE_TOOLCHAIN_FILE=${toolchainFile.asFile.absolutePath}")
     option("-DBUILD_SHARED_LIBS=ON")
     option("-DREQUIRE_BORINGSSL=ON")
     option("-DCMAKE_BUILD_TYPE=Release")
+    option("-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${buildDir.get().asFile.absolutePath}")
 
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         option("-DVCPKG_TARGET_TRIPLET=x64-windows-static-md")
-    } else {
-        option("-DCMAKE_INSTALL_PREFIX=${System.getProperty("user.home")}/.local")
     }
 }
 
 val cmakeBuildShared by tasks.registering(AbstractCmakeTask::class) {
     dependsOn(cmakePrepareShared)
 
-    outputDir = cmakePrepareShared.get().outputDir
+    buildDir = cmakePrepareShared.get().buildDir
 
-    option("--build", outputDir.get().asFile.absolutePath)
+    option("--build", buildDir.get().asFile.absolutePath)
     option("--target", "libdave")
     option("--config", "Release")
-}
-
-val cmakeInstallShared by tasks.registering(AbstractCmakeTask::class) {
-    dependsOn(cmakeBuildShared)
-
-    outputDir = cmakePrepareShared.get().outputDir
-    outputs.upToDateWhen { false }
-
-    option("--install", outputDir.get().asFile.absolutePath)
-
-    onlyIf { !Os.isFamily(Os.FAMILY_WINDOWS) }
-}
-
-val cmakeAssemble by tasks.registering(Copy::class) {
-    dependsOn(cmakeBuildShared)
-
-    from(cmakeBuildShared.get().outputDir.dir("Release")) {
-        include {
-            it.name.endsWith("dave.so") || it.name.endsWith("dave.dll") || it.name.endsWith("dave.dylib")
-        }
-    }
-
-    into(layout.buildDirectory.dir("libs"))
 }
 
 tasks.clean {
     dependsOn(cmakeClean)
 }
 
-tasks.build {
-    dependsOn(cmakeAssemble)
+tasks.assemble {
+    dependsOn(cmakeBuildShared)
 }
