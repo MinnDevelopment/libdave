@@ -21,7 +21,7 @@ From Makefile:
 */
 
 val buildSharedLibs = true
-val opensslManifest: RegularFile = layout.projectDirectory.file("vcpkg-alts/openssl_3")
+val opensslManifest: RegularFile = layout.projectDirectory.file("vcpkg-alts/boringssl")
 val toolchainFile: RegularFile = layout.projectDirectory.file("vcpkg/scripts/buildsystems/vcpkg.cmake")
 val cmakeBuildDir: Provider<Directory> = layout.buildDirectory.dir("cmake")
 
@@ -30,6 +30,8 @@ val cmakeClean by tasks.registering(Delete::class) {
 }
 
 val cmakePrepareShared by tasks.registering(AbstractCmakeTask::class) {
+    environment.put("VCPKG_BUILD_TYPE", "release")
+
     inputs.file("CMakeLists.txt")
     inputs.file("test/CMakeLists.txt")
     outputDir = cmakeBuildDir.get().dir("shared")
@@ -38,11 +40,13 @@ val cmakePrepareShared by tasks.registering(AbstractCmakeTask::class) {
     option("-DVCPKG_MANIFEST_DIR=${opensslManifest.asFile.absolutePath}")
     option("-DCMAKE_TOOLCHAIN_FILE=${toolchainFile.asFile.absolutePath}")
     option("-DBUILD_SHARED_LIBS=ON")
+    option("-DREQUIRE_BORINGSSL=ON")
+    option("-DCMAKE_BUILD_TYPE=Release")
 
-    if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        option("-DVCPKG_TARGET_TRIPLET=x64-windows-static-md")
+    } else {
         option("-DCMAKE_INSTALL_PREFIX=${System.getProperty("user.home")}/.local")
-//    } else {
-//        option("-G", "Visual Studio 17 2022")
     }
 }
 
@@ -70,7 +74,7 @@ val cmakeInstallShared by tasks.registering(AbstractCmakeTask::class) {
 val cmakeAssemble by tasks.registering(Copy::class) {
     dependsOn(cmakeBuildShared)
 
-    from(cmakeBuildShared.get().outputDir) {
+    from(cmakeBuildShared.get().outputDir.dir("Release")) {
         include {
             it.name.endsWith("dave.so") || it.name.endsWith("dave.dll") || it.name.endsWith("dave.dylib")
         }
