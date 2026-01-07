@@ -41,7 +41,8 @@ val cmakePrepareShared by tasks.registering(AbstractCmakeTask::class) {
     option("-DBUILD_SHARED_LIBS=ON")
     option("-DREQUIRE_BORINGSSL=ON")
     option("-DCMAKE_BUILD_TYPE=Release")
-    option("-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${layout.buildDirectory.dir("libs").get()}")
+    option("-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=${layout.buildDirectory.dir("libs").get()}")
+    option("-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${layout.buildDirectory.dir("libs").get()}")
 
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         option("-DVCPKG_TARGET_TRIPLET=x64-windows-static-md")
