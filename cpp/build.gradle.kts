@@ -44,8 +44,9 @@ val cmakePrepareShared by tasks.registering(AbstractCmakeTask::class) {
     option("-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=${layout.buildDirectory.dir("libs").get()}")
     option("-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${layout.buildDirectory.dir("libs").get()}")
 
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        option("-DVCPKG_TARGET_TRIPLET=x64-windows-static-md")
+    when {
+        Os.isFamily(Os.FAMILY_WINDOWS) -> option("-DVCPKG_TARGET_TRIPLET=x64-windows-static-md")
+        Os.isFamily(Os.FAMILY_MAC) -> option("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64")
     }
 }
 
