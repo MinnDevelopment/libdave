@@ -34,7 +34,6 @@ val cmakePrepareShared by tasks.registering(AbstractCmakeTask::class) {
 
     inputs.file("CMakeLists.txt")
     buildDir = cmakeBuildDir.get().dir("shared")
-    val buildDir = layout.buildDirectory.dir("libs")
 
     option("-B${buildDir.get().asFile.absolutePath}")
     option("-DVCPKG_MANIFEST_DIR=${opensslManifest.asFile.absolutePath}")
@@ -42,7 +41,7 @@ val cmakePrepareShared by tasks.registering(AbstractCmakeTask::class) {
     option("-DBUILD_SHARED_LIBS=ON")
     option("-DREQUIRE_BORINGSSL=ON")
     option("-DCMAKE_BUILD_TYPE=Release")
-    option("-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${buildDir.get().asFile.absolutePath}")
+    option("-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${layout.buildDirectory.dir("libs").get()}")
 
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         option("-DVCPKG_TARGET_TRIPLET=x64-windows-static-md")
