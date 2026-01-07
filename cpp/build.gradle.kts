@@ -46,7 +46,10 @@ val cmakePrepareShared by tasks.registering(AbstractCmakeTask::class) {
 
     when {
         Os.isFamily(Os.FAMILY_WINDOWS) -> option("-DVCPKG_TARGET_TRIPLET=x64-windows-static-md")
-        Os.isFamily(Os.FAMILY_MAC) -> option("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64")
+        Os.isFamily(Os.FAMILY_MAC) -> {
+            option("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64")
+            option("-DVCPKG_TARGET_ARCHITECTURES=arm64;x86_64")
+        }
     }
 }
 
