@@ -93,8 +93,8 @@ val cmakeBuildDarwin by tasks.registering(Exec::class) {
     dependsOn(cmakeBuildDarwinX64, cmakeBuildDarwinArm)
 
     doFirst {
-        Files.createDirectory(
-            layout.buildDirectory.dir("libs").get().asFile.toPath()
+        Files.createDirectories(
+            layout.buildDirectory.dir("libs").get().asFile.toPath(),
         )
     }
 
