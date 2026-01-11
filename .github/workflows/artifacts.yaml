@@ -1,4 +1,5 @@
-name: artifacts.yaml
+name: Build Artifacts
+
 on:
   push:
     branches: [ main ]
@@ -13,6 +14,17 @@ env:
 jobs:
   linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: x64
+          - arch: arm64
+            installs: sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu golang-go
+    name: Linux ${{ matrix.arch }}
+    env:
+      CC: ${{ matrix.arch == 'arm64' && 'aarch64-linux-gnu-gcc' || 'gcc' }}
+      CXX: ${{ matrix.arch == 'arm64' && 'aarch64-linux-gnu-g++' || 'g++' }}
+      LD: ${{ matrix.arch == 'arm64' && 'aarch64-linux-gnu-ld' || 'ld' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -25,9 +37,14 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y curl make cmake nasm gcc libssl-dev nlohmann-json3-dev doctest-dev
 
+      - name: Install cross-compiler
+        shell: bash
+        if: ${{ matrix.installs != '' }}
+        run: ${{ matrix.installs }}
+
       - uses: ./.github/actions/vcpkg-setup
         with:
-          runner: linux
+          runner: linux-${{ matrix.arch }}
           crypto: boringssl
           cache-dir: vcpkg_cache
 
@@ -40,7 +57,8 @@ jobs:
             -DBUILD_SHARED_LIBS=ON \
             -DREQUIRE_BORINGSSL=ON \
             -DCMAKE_BUILD_TYPE=Release \
-            -DVCPKG_TARGET_ARCHITECTURE=x86_64 \
+            -DVCPKG_TARGET_ARCHITECTURE=${{ matrix.arch }} \
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.arch }}-linux \
             -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release \
             -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release
 
@@ -53,11 +71,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           if-no-files-found: 'error'
-          name: Linux-x86_64
+          name: Linux-${{ matrix.arch }}
           path: cpp/build/Release/libdave.so
 
   windows:
     runs-on: windows-latest
+    name: Windows x64
     steps:
       - uses: actions/checkout@v6
         with:
@@ -102,6 +121,7 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64, aarch64]
+    name: Darwin ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -140,5 +160,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           if-no-files-found: 'error'
-          name: Darwin_${{ matrix.arch }}
+          name: Darwin-${{ matrix.arch }}
           path: cpp/build/Release/libdave.dylib
