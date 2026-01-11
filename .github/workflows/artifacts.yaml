@@ -120,7 +120,11 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        arch: [x86_64, aarch64]
+        include:
+          - arch: x86_64
+            osx_arch: x86_64
+          - arch: aarch64
+            osx_arch: arm64
     name: Darwin ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v6
@@ -147,6 +151,7 @@ jobs:
             -DBUILD_SHARED_LIBS=ON \
             -DREQUIRE_BORINGSSL=ON \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }} \
             -DVCPKG_TARGET_ARCHITECTURE=${{ matrix.arch }} \
             -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release \
             -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release
@@ -162,3 +167,34 @@ jobs:
           if-no-files-found: 'error'
           name: Darwin-${{ matrix.arch }}
           path: cpp/build/Release/libdave.dylib
+
+  macos-universal:
+    runs-on: macos-latest
+    needs: macos
+    name: Darwin Universal
+    steps:
+      - name: Download x86_64 artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: Darwin-x86_64
+          path: artifacts/x86_64
+
+      - name: Download aarch64 artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: Darwin-aarch64
+          path: artifacts/aarch64
+
+      - name: Create universal binary
+        run: |
+          lipo -create \
+            artifacts/x86_64/libdave.dylib \
+            artifacts/aarch64/libdave.dylib \
+            -output libdave.dylib
+
+      - name: Upload universal binary
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: 'error'
+          name: Darwin
+          path: libdave.dylib
