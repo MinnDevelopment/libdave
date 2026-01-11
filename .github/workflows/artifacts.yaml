@@ -25,9 +25,11 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y curl make cmake nasm gcc libssl-dev nlohmann-json3-dev doctest-dev
 
-      - name: Prepare vcpkg
-        run: |
-          ./cpp/vcpkg/bootstrap-vcpkg.sh
+      - uses: ./.github/actions/vcpkg-setup
+        with:
+          runner: linux
+          crypto: boringssl
+          cache-dir: vcpkg_cache
 
       - name: Setup build directory
         working-directory: cpp
@@ -39,8 +41,8 @@ jobs:
             -DREQUIRE_BORINGSSL=ON \
             -DCMAKE_BUILD_TYPE=Release \
             -DVCPKG_TARGET_ARCHITECTURE=x86_64 \
-            -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=build/Release \
-            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=build/Release
+            -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release \
+            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release
 
       - name: Build Artifacts
         working-directory: cpp
@@ -50,7 +52,8 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Linux_x86_64
+          if-no-files-found: 'error'
+          name: Linux-x86_64
           path: cpp/build/Release/libdave.so
 
   windows:
@@ -61,10 +64,11 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Prepare vcpkg
-        shell: cmd
-        run: |
-          cpp/vcpkg/bootstrap-vcpkg.bat
+      - uses: ./.github/actions/vcpkg-setup
+        with:
+          runner: windows
+          crypto: boringssl
+          cache-dir: vcpkg_cache
 
       - name: Setup build directory
         shell: cmd
@@ -77,8 +81,8 @@ jobs:
             -DREQUIRE_BORINGSSL=ON ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DVCPKG_TARGET_ARCHITECTURE=x86_64 ^
-            -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=build/Release ^
-            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=build/Release ^
+            -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release ^
+            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release ^
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
 
       - name: Build Artifacts
@@ -89,11 +93,15 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Linux_x86_64
-          path: cpp/build/Release/libdave.dll
+          if-no-files-found: 'error'
+          name: Windows-x86_64
+          path: cpp/build/Release/dave.dll
 
   macos:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -104,9 +112,11 @@ jobs:
         shell: bash
         run: brew install nasm go
 
-      - name: Prepare vcpkg
-        run: |
-          ./cpp/vcpkg/bootstrap-vcpkg.sh
+      - uses: ./.github/actions/vcpkg-setup
+        with:
+          runner: darwin-${{ matrix.arch }}
+          crypto: boringssl
+          cache-dir: vcpkg_cache
 
       - name: Setup build directory
         working-directory: cpp
@@ -117,9 +127,9 @@ jobs:
             -DBUILD_SHARED_LIBS=ON \
             -DREQUIRE_BORINGSSL=ON \
             -DCMAKE_BUILD_TYPE=Release \
-            -DVCPKG_TARGET_ARCHITECTURE=x86_64 \
-            -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=build/Release \
-            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=build/Release
+            -DVCPKG_TARGET_ARCHITECTURE=${{ matrix.arch }} \
+            -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release \
+            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release
 
       - name: Build Artifacts
         working-directory: cpp
@@ -129,5 +139,6 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Linux_x86_64
+          if-no-files-found: 'error'
+          name: Darwin_${{ matrix.arch }}
           path: cpp/build/Release/libdave.dylib
