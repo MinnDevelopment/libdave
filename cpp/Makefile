@@ -38,7 +38,7 @@ ifeq ($(OS), Windows_NT)
 endif
 
 all: ${BUILD_DIR}
-	cmake --build ${BUILD_DIR} --target libdave --config ${BUILD_TYPE}
+	cmake --build ${BUILD_DIR} --target dave --config ${BUILD_TYPE}
 
 ${BUILD_DIR}: CMakeLists.txt test/CMakeLists.txt test/capi/CMakeLists.txt
 	cmake -B${BUILD_DIR}  \
@@ -82,7 +82,7 @@ wasm: check-emsdk
 		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
 		-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${EMSCRIPTEN_TOOLCHAIN_FILE} \
 		-DVCPKG_TARGET_TRIPLET=wasm32-emscripten
-	cmake --build ${BUILD_DIR} --target libdave --config ${BUILD_TYPE}
+	cmake --build ${BUILD_DIR} --target dave --config ${BUILD_TYPE}
 
 check-emsdk:
 	@if [ -z "$$EMSDK" ]; then \

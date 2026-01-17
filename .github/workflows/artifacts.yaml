@@ -65,7 +65,7 @@ jobs:
       - name: Build Artifacts
         working-directory: cpp
         run: |
-          cmake --build build --config Release --target libdave
+          cmake --build build --config Release --target dave
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -100,14 +100,14 @@ jobs:
             -DREQUIRE_BORINGSSL=ON ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DVCPKG_TARGET_ARCHITECTURE=x86_64 ^
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static ^
             -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release ^
-            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release ^
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release
 
       - name: Build Artifacts
         working-directory: cpp
         run: |
-          cmake --build build --config Release --target libdave
+          cmake --build build --config Release --target dave
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -159,7 +159,7 @@ jobs:
       - name: Build Artifacts
         working-directory: cpp
         run: |
-          cmake --build build --config Release --target libdave
+          cmake --build build --config Release --target dave
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
