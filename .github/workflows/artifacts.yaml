@@ -102,7 +102,7 @@ jobs:
             -DVCPKG_TARGET_ARCHITECTURE=x86_64 ^
             -DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release ^
             -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${{ github.workspace }}/cpp/build/Release ^
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static
 
       - name: Build Artifacts
         working-directory: cpp
