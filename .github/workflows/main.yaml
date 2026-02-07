@@ -21,7 +21,7 @@ jobs:
   debug-test:
     strategy:
       matrix:
-        runner: [ubuntu-latest, macos-latest, macos-15-intel, windows-latest]
+        runner: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel, windows-latest]
         crypto: [openssl_3, openssl_1.1, boringssl]
       fail-fast: false
 
@@ -38,7 +38,7 @@ jobs:
           runner: ${{ matrix.runner }}
           crypto: ${{ matrix.crypto }}
           cache-dir: ${{ env.VCPKG_CACHE_DIR }}
-          make-args: BUILD_TYPE=Debug SSL=${{ matrix.crypto }} BUILD_SHARED_LIBS=ON TESTING=ON SANITIZERS=ON
+          make-args: BUILD_TYPE=Debug SSL=${{ matrix.crypto }} BUILD_SHARED_LIBS=ON TESTING=ON SANITIZERS=ON MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
 
       - name: build libdave
         run: make dev-sanitizers BUILD_DIR='${{ env.BUILD_DIR }}'
@@ -52,7 +52,7 @@ jobs:
   release-build:
     strategy:
       matrix:
-        runner: [ubuntu-latest, macos-latest, macos-15-intel, windows-latest]
+        runner: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel, windows-latest]
         crypto: [boringssl]
       fail-fast: false
 
@@ -69,7 +69,7 @@ jobs:
           runner: ${{ matrix.runner }}
           crypto: ${{ matrix.crypto }}
           cache-dir: ${{ env.VCPKG_CACHE_DIR }}
-          make-args: BUILD_TYPE=Release SSL=${{ matrix.crypto }} BUILD_SHARED_LIBS=ON TESTING=ON INSTALL_VCPKG_LICENSES=ON
+          make-args: BUILD_TYPE=Release SSL=${{ matrix.crypto }} BUILD_SHARED_LIBS=ON TESTING=ON INSTALL_VCPKG_LICENSES=ON MSVC_RUNTIME_LIBRARY=MultiThreaded
 
       - name: build libdave
         run: make all BUILD_DIR='${{ env.BUILD_DIR }}' BUILD_TYPE=Release
